@@ -416,6 +416,8 @@ pub struct WindowAttributes {
     /// The default is `true`.
     pub resizable: bool,
 
+    pub capture: bool,
+
     /// Whether the window should be set as fullscreen upon creation.
     ///
     /// The default is `None`.
@@ -470,6 +472,7 @@ impl Default for WindowAttributes {
             min_dimensions: None,
             max_dimensions: None,
             resizable: true,
+            capture: true,
             title: "winit window".to_owned(),
             maximized: false,
             fullscreen: None,

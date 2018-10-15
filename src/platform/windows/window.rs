@@ -294,6 +294,23 @@ impl Window {
         }
     }
 
+    #[inline]
+    pub fn set_capture(&self, capture: bool) {
+        let mut ex_style = unsafe {
+            winuser::GetWindowLongA(self.window.0, winuser::GWL_EXSTYLE) as DWORD
+        };
+
+        if capture {
+            ex_style &= !winuser::WS_EX_TRANSPARENT & !winuser::WS_EX_LAYERED;
+        } else {
+            ex_style |= winuser::WS_EX_TRANSPARENT | winuser::WS_EX_LAYERED;
+        }
+
+        unsafe {
+            winuser::SetWindowLongA(self.window.0, winuser::GWL_EXSTYLE, ex_style as _);
+        }
+    }
+
     /// Returns the `hwnd` of this window.
     #[inline]
     pub fn hwnd(&self) -> HWND {
@@ -905,6 +922,9 @@ unsafe fn init(
     if pl_attribs.no_redirection_bitmap {
         ex_style |= winuser::WS_EX_NOREDIRECTIONBITMAP;
     }
+    // if attributes.transparent {
+    //     ex_style |= winuser::WS_EX_TRANSPARENT | winuser::WS_EX_LAYERED;
+    // }
     if attributes.transparent && attributes.decorations {
         ex_style |= winuser::WS_EX_LAYERED;
     }
@@ -943,6 +963,10 @@ unsafe fn init(
 
         if pl_attribs.parent.is_some() {
             style |= winuser::WS_CHILD;
+        }
+
+        if !attributes.capture {
+            ex_style |= winuser::WS_EX_TRANSPARENT | winuser::WS_EX_LAYERED;
         }
 
         let handle = winuser::CreateWindowExW(ex_style | winuser::WS_EX_ACCEPTFILES,
@@ -1031,7 +1055,7 @@ unsafe fn init(
 
         dwmapi::DwmEnableBlurBehindWindow(real_window.0, &bb);
 
-        if attributes.decorations {
+        if !attributes.capture || attributes.decorations {
             // HACK: When opaque (opacity 255), there is a trail whenever
             // the transparent window is moved. By reducing it to 254,
             // the window is rendered properly.
@@ -1039,6 +1063,13 @@ unsafe fn init(
 
             winuser::SetLayeredWindowAttributes(real_window.0, 0x0030c100, opacity, winuser::LWA_ALPHA);
         }
+    } else if !attributes.capture {
+        // HACK: When opaque (opacity 255), there is a trail whenever
+        // the transparent window is moved. By reducing it to 254,
+        // the window is rendered properly.
+        let opacity = 254;
+
+        winuser::SetLayeredWindowAttributes(real_window.0, 0x0030c100, opacity, winuser::LWA_ALPHA);
     }
 
     let win = Window {

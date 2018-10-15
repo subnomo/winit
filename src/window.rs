@@ -62,6 +62,12 @@ impl WindowBuilder {
         self
     }
 
+    #[inline]
+    pub fn with_capture(mut self, capture: bool) -> WindowBuilder {
+        self.window.capture = capture;
+        self
+    }
+
     /// Requests a specific title for the window.
     #[inline]
     pub fn with_title<T: Into<String>>(mut self, title: T) -> WindowBuilder {
@@ -298,6 +304,11 @@ impl Window {
     #[inline]
     pub fn set_resizable(&self, resizable: bool) {
         self.window.set_resizable(resizable)
+    }
+
+    #[inline]
+    pub fn set_capture(&self, capture: bool) {
+        self.window.set_capture(capture)
     }
 
     /// Returns the DPI factor that can be used to map logical pixels to physical pixels, and vice versa.
