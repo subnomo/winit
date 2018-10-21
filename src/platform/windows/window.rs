@@ -902,7 +902,7 @@ unsafe fn init(
 
     // computing the style and extended style of the window
     let (mut ex_style, style) = if !attributes.decorations {
-        (winuser::WS_EX_APPWINDOW,
+        (0x0,
             //winapi::WS_POPUP is incompatible with winapi::WS_CHILD
             if pl_attribs.parent.is_some() {
                 winuser::WS_CLIPSIBLINGS | winuser::WS_CLIPCHILDREN
@@ -912,7 +912,7 @@ unsafe fn init(
             }
         )
     } else {
-        (winuser::WS_EX_APPWINDOW | winuser::WS_EX_WINDOWEDGE,
+        (/*winuser::WS_EX_APPWINDOW | */winuser::WS_EX_WINDOWEDGE,
             winuser::WS_OVERLAPPEDWINDOW | winuser::WS_CLIPSIBLINGS | winuser::WS_CLIPCHILDREN)
     };
 
@@ -922,9 +922,9 @@ unsafe fn init(
     if pl_attribs.no_redirection_bitmap {
         ex_style |= winuser::WS_EX_NOREDIRECTIONBITMAP;
     }
-    // if attributes.transparent {
-    //     ex_style |= winuser::WS_EX_TRANSPARENT | winuser::WS_EX_LAYERED;
-    // }
+    if attributes.transparent {
+        ex_style |= winuser::WS_EX_TOOLWINDOW;
+    }
     if attributes.transparent && attributes.decorations {
         ex_style |= winuser::WS_EX_LAYERED;
     }
