@@ -119,6 +119,11 @@ pub struct WindowAttributes {
     /// The default is `true`.
     pub resizable: bool,
 
+    /// Whether the window should capture input or not.
+    /// 
+    /// The default is `true`.
+    pub capture: bool,
+
     /// Whether the window should be set as fullscreen upon creation.
     ///
     /// The default is `None`.
@@ -169,6 +174,7 @@ impl Default for WindowAttributes {
             min_inner_size: None,
             max_inner_size: None,
             resizable: true,
+            capture: true,
             title: "winit window".to_owned(),
             maximized: false,
             fullscreen: None,
@@ -232,6 +238,17 @@ impl WindowBuilder {
     #[inline]
     pub fn with_resizable(mut self, resizable: bool) -> Self {
         self.window.resizable = resizable;
+        self
+    }
+
+    /// Sets whether the window should capture input or not.
+    ///
+    /// See [`Window::set_capture`] for details.
+    ///
+    /// [`Window::set_capture`]: struct.Window.html#method.set_capture
+    #[inline]
+    pub fn with_capture(mut self, capture: bool) -> Self {
+        self.window.capture = capture;
         self
     }
 
@@ -570,6 +587,12 @@ impl Window {
     #[inline]
     pub fn set_resizable(&self, resizable: bool) {
         self.window.set_resizable(resizable)
+    }
+
+    /// Sets whether the window should capture input or not.
+    #[inline]
+    pub fn set_capture(&self, capture: bool) {
+        self.window.set_capture(capture)
     }
 
     /// Sets the window to maximized or back.

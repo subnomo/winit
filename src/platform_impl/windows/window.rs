@@ -352,6 +352,18 @@ impl Window {
         });
     }
 
+    #[inline]
+    pub fn set_capture(&self, capture: bool) {
+        let window = self.window.clone();
+        let window_state = Arc::clone(&self.window_state);
+
+        self.thread_executor.execute_in_thread(move || {
+            WindowState::set_window_flags(window_state.lock(), window.0, |f| {
+                f.set(WindowFlags::NO_CAPTURE, !capture)
+            });
+        });
+    }
+
     /// Returns the `hwnd` of this window.
     #[inline]
     pub fn hwnd(&self) -> HWND {
@@ -808,6 +820,7 @@ unsafe fn init<T: 'static>(
     window_flags.set(WindowFlags::RESIZABLE, attributes.resizable);
     window_flags.set(WindowFlags::CHILD, pl_attribs.parent.is_some());
     window_flags.set(WindowFlags::ON_TASKBAR, true);
+    window_flags.set(WindowFlags::NO_CAPTURE, !attributes.capture);
 
     // creating the real window this time, by using the functions in `extra_functions`
     let real_window = {
@@ -876,7 +889,7 @@ unsafe fn init<T: 'static>(
         dwmapi::DwmEnableBlurBehindWindow(real_window.0, &bb);
         DeleteObject(region as _);
 
-        if attributes.decorations {
+        if !attributes.capture || attributes.decorations {
             // HACK: When opaque (opacity 255), there is a trail whenever
             // the transparent window is moved. By reducing it to 254,
             // the window is rendered properly.
@@ -892,6 +905,21 @@ unsafe fn init<T: 'static>(
                 winuser::LWA_ALPHA,
             );
         }
+    } else if !attributes.capture {
+        // HACK: When opaque (opacity 255), there is a trail whenever
+        // the transparent window is moved. By reducing it to 254,
+        // the window is rendered properly.
+        let opacity = 254;
+
+        // The color key can be any value except for black (0x0).
+        let color_key = 0x0030c100;
+
+        winuser::SetLayeredWindowAttributes(
+            real_window.0,
+            color_key,
+            opacity,
+            winuser::LWA_ALPHA,
+        );
     }
 
     window_flags.set(WindowFlags::VISIBLE, attributes.visible);

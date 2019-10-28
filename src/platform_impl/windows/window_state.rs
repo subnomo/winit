@@ -87,6 +87,8 @@ bitflags! {
         const FULLSCREEN_OR_MASK = WindowFlags::ALWAYS_ON_TOP.bits;
         const NO_DECORATIONS_AND_MASK = !WindowFlags::RESIZABLE.bits;
         const INVISIBLE_AND_MASK = !WindowFlags::MAXIMIZED.bits;
+
+        const NO_CAPTURE = 1 << 11;
     }
 }
 
@@ -214,6 +216,9 @@ impl WindowFlags {
         }
         if self.contains(WindowFlags::MAXIMIZED) {
             style |= WS_MAXIMIZE;
+        }
+        if self.contains(WindowFlags::NO_CAPTURE) {
+            style_ex |= WS_EX_TRANSPARENT | WS_EX_LAYERED;
         }
 
         style |= WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_SYSMENU;
