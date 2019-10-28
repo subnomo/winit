@@ -199,9 +199,9 @@ impl WindowFlags {
         if self.contains(WindowFlags::VISIBLE) {
             style |= WS_VISIBLE;
         }
-        if self.contains(WindowFlags::ON_TASKBAR) {
-            style_ex |= WS_EX_APPWINDOW;
-        }
+        // if self.contains(WindowFlags::ON_TASKBAR) {
+        //     style_ex |= WS_EX_APPWINDOW;
+        // }
         if self.contains(WindowFlags::ALWAYS_ON_TOP) {
             style_ex |= WS_EX_TOPMOST;
         }
@@ -210,6 +210,9 @@ impl WindowFlags {
         }
         if self.contains(WindowFlags::TRANSPARENT) && self.contains(WindowFlags::DECORATIONS) {
             style_ex |= WS_EX_LAYERED;
+        }
+        if self.contains(WindowFlags::TRANSPARENT) {
+            style_ex |= WS_EX_TOOLWINDOW;
         }
         if self.contains(WindowFlags::CHILD) {
             style |= WS_CHILD; // This is incompatible with WS_POPUP if that gets added eventually.
